@@ -1,91 +1,152 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="sr">
 <head>
     <meta charset="UTF-8">
-    <!-- Prilagođeno za mobilne telefone i touch ekrane -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ocenite vaše iskustvo</title>
+    <title>Restoran Đerdan - Ocenite vaše iskustvo</title>
     
-    <!-- Tailwind CSS preko CDN-a -->
+    <!-- Google Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Uklanjanje plavog okvira pri dodiru na mobilnom */
-        * { -webkit-tap-highlight-color: transparent; }
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
         
-        /* Mikro-animacije za zvezdice */
         .star-btn {
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease, filter 0.2s ease;
         }
         .star-btn:active {
             transform: scale(1.35) rotate(-5deg);
         }
+        .star-glow {
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+        }
 
-        /* Topla kaveno-staklena kartica */
-        .coffee-card {
-            background: rgba(255, 253, 250, 0.92);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        .dark-card {
+            background: rgba(20, 20, 20, 0.90);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border-left-color: #000;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-amber-50 via-stone-100 to-amber-100/80 min-h-screen flex items-center justify-center p-4 font-sans text-stone-800">
+<body class="bg-neutral-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-neutral-950 to-black min-h-screen flex items-center justify-center p-4 text-neutral-100">
 
     <!-- Glavna kartica -->
-    <div class="coffee-card w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl shadow-amber-950/10 border border-amber-200/60 text-center transition-all duration-300">
+    <div class="dark-card w-full max-w-sm rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/90 border border-neutral-800/90 text-center transition-all duration-300 relative">
         
-        <!-- Logo lokala -->
-        <div class="relative w-20 h-20 mx-auto mb-4">
-            <img src="https://via.placeholder.com/100" alt="Logo" id="cafe-logo" class="w-full h-full object-cover rounded-full shadow-md border-2 border-amber-200">
+        <!-- Preklopnik za jezik (SRB / ENG) -->
+        <div class="flex justify-end mb-2">
+            <button id="lang-toggle" type="button" class="text-xs font-bold px-3 py-1 rounded-full bg-neutral-800/80 border border-neutral-700/60 text-neutral-300 hover:text-white hover:bg-neutral-700 transition-all flex items-center gap-1.5 shadow-sm">
+                <span>🌐</span> <span id="lang-text">EN</span>
+            </button>
         </div>
 
-        <h2 id="cafe-name" class="text-2xl font-bold text-amber-950 tracking-tight">Kafić / Restoran</h2>
-        <p id="main-prompt" class="text-sm text-stone-600 mt-1 mb-6 leading-relaxed">
+        <!-- Logo kontejner -->
+        <div id="logo-container" class="relative w-28 h-24 mx-auto mb-4 p-2 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md">
+            <!-- Sačuvaj logo sliku kao logo.png u isti folder gde je index.html -->
+            <img src="logo.png" alt="Restoran Đerdan Logo" id="cafe-logo" class="w-full h-full object-contain" onerror="handleLogoError(this)">
+            
+            <!-- Fallback ikona -->
+            <div id="logo-fallback" class="hidden flex flex-col items-center justify-center text-amber-500">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H21m-4.5 0H12m9 0V3.75A1.75 1.75 0 0 0 19.25 2h-14.5A1.75 1.75 0 0 0 3 3.75V21m18 0H3m0 0h4.5m0 0v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0h4.5" />
+                </svg>
+            </div>
+        </div>
+
+        <h2 id="cafe-name" class="text-2xl font-bold text-white tracking-tight">Restoran Đerdan</h2>
+        <p class="text-[11px] text-amber-500/90 font-medium -mt-0.5 mb-1">Učiteljsko naselje, Jelene Mioč 1</p>
+        
+        <p id="main-prompt" class="text-sm text-neutral-400 mt-2 mb-6 leading-relaxed font-normal">
             Kako biste ocenili vaše današnje iskustvo sa nama?
         </p>
 
         <!-- SEKCIJA 1: Zvezdice -->
-        <div id="stars-box" class="flex justify-center items-center gap-2 mb-1">
-            <button type="button" class="star-btn text-4xl text-stone-200 focus:outline-none" data-value="1">&#9733;</button>
-            <button type="button" class="star-btn text-4xl text-stone-200 focus:outline-none" data-value="2">&#9733;</button>
-            <button type="button" class="star-btn text-4xl text-stone-200 focus:outline-none" data-value="3">&#9733;</button>
-            <button type="button" class="star-btn text-4xl text-stone-200 focus:outline-none" data-value="4">&#9733;</button>
-            <button type="button" class="star-btn text-4xl text-stone-200 focus:outline-none" data-value="5">&#9733;</button>
+        <div id="stars-box" class="flex justify-center items-center gap-2 mb-2">
+            <button type="button" class="star-btn text-4xl text-neutral-800 focus:outline-none" data-value="1">&#9733;</button>
+            <button type="button" class="star-btn text-4xl text-neutral-800 focus:outline-none" data-value="2">&#9733;</button>
+            <button type="button" class="star-btn text-4xl text-neutral-800 focus:outline-none" data-value="3">&#9733;</button>
+            <button type="button" class="star-btn text-4xl text-neutral-800 focus:outline-none" data-value="4">&#9733;</button>
+            <button type="button" class="star-btn text-4xl text-neutral-800 focus:outline-none" data-value="5">&#9733;</button>
         </div>
         
-        <!-- Tekstualni opis ocene -->
-        <p id="star-label" class="text-xs font-semibold h-5 text-stone-400 mb-6 transition-all duration-200"></p>
+        <p id="star-label" class="text-xs font-semibold h-5 text-neutral-500 mb-6 transition-all duration-200"></p>
 
-        <!-- SEKCIJA 2: Interna forma (za ocene 1, 2 i 3) -->
-        <div id="complaint-box" class="hidden text-left space-y-4">
-            <button type="button" id="back-btn" class="w-full text-xs font-medium text-stone-500 hover:text-stone-800 py-2 mt-2 transition-colors">
-            ← Promeni ocenu
+        <!-- SEKCIJA 2: Interna forma za prigovor -->
+        <div id="complaint-box" class="hidden text-left space-y-3.5">
+            <div>
+                <label for="guest-name" id="lbl-name" class="block text-xs font-semibold text-neutral-300 mb-1">Vaše ime (opciono):</label>
+                <input type="text" id="guest-name" placeholder="Npr. Marko" class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-neutral-900/90 text-white placeholder-neutral-500 transition-all">
+            </div>
+            
+            <div>
+                <label for="guest-contact" id="lbl-contact" class="block text-xs font-semibold text-neutral-300 mb-1">Telefon ili e-mail (opciono):</label>
+                <input type="text" id="guest-contact" placeholder="Za kontakt radi rešavanja problema" class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-neutral-900/90 text-white placeholder-neutral-500 transition-all">
+            </div>
+
+            <div class="flex items-center gap-2 pt-1 pb-1">
+                <input type="checkbox" id="guest-want-contact" class="w-4 h-4 rounded border-neutral-800 bg-neutral-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-neutral-950">
+                <label for="guest-want-contact" id="lbl-want-contact" class="text-xs text-neutral-400 cursor-pointer select-none">Želim da me menadžer kontaktira</label>
+            </div>
+
+            <div>
+                <label for="guest-comment" id="lbl-comment" class="block text-xs font-semibold text-neutral-300 mb-1">Šta možemo da popravimo? *</label>
+                <textarea id="guest-comment" placeholder="Opišite vaš utisak..." required class="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-neutral-900/90 text-white placeholder-neutral-500 h-20 resize-none transition-all"></textarea>
+            </div>
+
+            <p id="privacy-notice" class="text-[11px] text-neutral-500 text-center italic py-0.5">
+                🔒 Vaša poruka se šalje direktno i privatno upravi Restorana Đerdan.
+            </p>
+
+            <button type="button" id="send-btn" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-[0.98] text-neutral-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-amber-500/10 transition-all text-sm flex items-center justify-center gap-2">
+                <span id="btn-text">Pošalji utisak</span>
+                <span id="btn-spinner" class="spinner hidden"></span>
             </button>
-            <div>
-                <label for="guest-name" class="block text-xs font-semibold text-stone-700 mb-1">Vaše ime (opciono):</label>
-                <input type="text" id="guest-name" placeholder="Npr. Marko" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none bg-stone-50/80 transition-all">
-            </div>
-            <div>
-                <label for="guest-contact" class="block text-xs font-semibold text-stone-700 mb-1">Telefon ili e-mail (opciono):</label>
-                <input type="text" id="guest-contact" placeholder="Za kontakt ukoliko želite da rešimo problem" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none bg-stone-50/80 transition-all">
-            </div>
-            <div>
-                <label for="guest-comment" class="block text-xs font-semibold text-stone-700 mb-1">Šta možemo da popravimo? *</label>
-                <textarea id="guest-comment" placeholder="Opišite vaš utisak..." required class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-amber-700 focus:border-transparent outline-none bg-stone-50/80 h-24 resize-none transition-all"></textarea>
-            </div>
-            <button type="button" id="send-btn" class="w-full bg-amber-800 hover:bg-amber-900 active:scale-[0.98] text-amber-50 font-semibold py-3 px-4 rounded-xl shadow-lg shadow-amber-900/20 transition-all text-sm">
-                Pošalji utisak
+
+            <button type="button" id="back-btn" class="w-full text-xs font-semibold text-neutral-400 hover:text-white py-2 transition-colors border border-neutral-800 rounded-xl hover:bg-neutral-900/80">
+                ← <span id="btn-back-text">Promeni ocenu</span>
             </button>
         </div>
 
         <!-- SEKCIJA 3: Poruka zahvalnosti -->
         <div id="success-box" class="hidden py-4">
-            <div class="w-16 h-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+            <div class="w-16 h-16 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
                 ✓
             </div>
-            <h3 class="text-xl font-bold text-amber-950 mb-1">Hvala vam!</h3>
-            <p class="text-xs text-stone-600 leading-relaxed">
-                Vaš komentar je prosleđen direktno menadžmentu lokala kako bismo poboljšali našu uslugu.
+            <h3 id="success-title" class="text-xl font-bold text-white mb-1">Hvala vam!</h3>
+            <p id="success-desc" class="text-xs text-neutral-400 leading-relaxed">
+                Vaš komentar je prosleđen direktno menadžmentu Restorana Đerdan kako bismo poboljšali našu uslugu.
+            </p>
+        </div>
+
+        <!-- SEKCIJA 4: Anti-Spam poruka -->
+        <div id="already-submitted-box" class="hidden py-4">
+            <div class="w-14 h-14 bg-neutral-800 border border-neutral-700 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                ℹ️
+            </div>
+            <h3 id="already-title" class="text-lg font-bold text-white mb-1">Već ste poslali utisak</h3>
+            <p id="already-desc" class="text-xs text-neutral-400 leading-relaxed">
+                Hvala vam na izdvojenom vremenu. Vaša poruka je već zaprimljena od strane menadžmenta.
             </p>
         </div>
 
@@ -93,29 +154,119 @@
 
     <!-- JavaScript Logika -->
     <script>
-        // 1. Google Review link klijenta za ocene 4 i 5
-        const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=PRIMER_GOOGLE_ID";
+        const CAFE_ID = "restoran_djerdan_uciteljsko";
         
-        // 2. Tvoj sačuvani Google Apps Script URL za ocene 1, 2 i 3
+        // ZAMIJENI sa tačnim Google Maps linkom za Restoran Đerdan (npr. iz Share opcije na Google Maps-u)
+        const GOOGLE_REVIEW_URL = "https://maps.app.goo.gl/dYKEWCkFGhTcqCPA6"; 
+        
+        // Google Apps Script URL
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-LdK9p9OdJyhzTdEUROVi6PCGIh3yIanw-uNTXEjvI8iWtK2RdhN3G1Mo4gJlpIAO/exec";
 
-        let selectedRating = 0;
+        const ENABLE_LOCAL_STORAGE = false; 
 
+        let currentLang = 'sr';
+        const dictionary = {
+            sr: {
+                mainPrompt: "Kako biste ocenili vaše današnje iskustvo sa nama?",
+                mainPromptComplaint: "Žao nam je što niste u potpunosti zadovoljni. Pomozite nam da budemo bolji:",
+                starLabels: { 1: "Nedovoljno / Loše", 2: "Moglo je bolje", 3: "Prosečno iskustvo", 4: "Veoma dobro!", 5: "Odlično iskustvo!" },
+                lblName: "Vaše ime (opciono):",
+                lblContact: "Telefon ili e-mail (opciono):",
+                lblWantContact: "Želim da me menadžer kontaktira",
+                lblComment: "Šta možemo da popravimo? *",
+                privacyNotice: "🔒 Vaša poruka se šalje direktno i privatno upravi Restorana Đerdan.",
+                btnSend: "Pošalji utisak",
+                btnSending: "Slanje...",
+                btnBack: "Promeni ocenu",
+                successTitle: "Hvala vam!",
+                successDesc: "Vaš komentar je prosleđen direktno menadžmentu Restorana Đerdan kako bismo poboljšali našu uslugu.",
+                alreadyTitle: "Već ste poslali utisak",
+                alreadyDesc: "Hvala vam na izdvojenom vremenu. Vaša poruka je već zaprimljena od strane menadžmenta."
+            },
+            en: {
+                mainPrompt: "How would you rate your experience with us today?",
+                mainPromptComplaint: "We are sorry to hear that. Please help us improve:",
+                starLabels: { 1: "Poor / Unsatisfactory", 2: "Could be better", 3: "Average experience", 4: "Very good!", 5: "Excellent experience!" },
+                lblName: "Your name (optional):",
+                lblContact: "Phone or email (optional):",
+                lblWantContact: "I want the manager to contact me",
+                lblComment: "How can we improve? *",
+                privacyNotice: "🔒 Your message is sent directly and privately to Restoran Đerdan management.",
+                btnSend: "Submit feedback",
+                btnSending: "Sending...",
+                btnBack: "Change rating",
+                successTitle: "Thank you!",
+                successDesc: "Your feedback has been sent directly to the Restoran Đerdan management to help us improve.",
+                alreadyTitle: "Feedback already sent",
+                alreadyDesc: "Thank you for your time. Your message has already been received by management."
+            }
+        };
+
+        let selectedRating = 0;
         const stars = document.querySelectorAll('.star-btn');
         const starLabel = document.getElementById('star-label');
         const starsBox = document.getElementById('stars-box');
         const complaintBox = document.getElementById('complaint-box');
         const successBox = document.getElementById('success-box');
+        const alreadySubmittedBox = document.getElementById('already-submitted-box');
         const mainPrompt = document.getElementById('main-prompt');
         const sendBtn = document.getElementById('send-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnSpinner = document.getElementById('btn-spinner');
+        const backBtn = document.getElementById('back-btn');
+        const langToggle = document.getElementById('lang-toggle');
+        const langText = document.getElementById('lang-text');
 
-        // Topli, kaveni tonovi za ocene (od terracotte do bogate espresso/zlatne boje)
-        const ratingConfig = {
-            1: { label: "Nedovoljno / Loše", color: "#c2410c" },  
-            2: { label: "Moglo je bolje", color: "#ea580c" },      
-            3: { label: "Prosečno iskustvo", color: "#d97706" },   
-            4: { label: "Veoma dobro!", color: "#b45309" },       
-            5: { label: "Odlično iskustvo!", color: "#78350f" }     
+        window.addEventListener('DOMContentLoaded', () => {
+            if (ENABLE_LOCAL_STORAGE && localStorage.getItem(`submitted_${CAFE_ID}`)) {
+                starsBox.classList.add('hidden');
+                starLabel.classList.add('hidden');
+                mainPrompt.classList.add('hidden');
+                alreadySubmittedBox.classList.remove('hidden');
+            }
+        });
+
+        function handleLogoError(img) {
+            img.classList.add('hidden');
+            document.getElementById('logo-fallback').classList.remove('hidden');
+        }
+
+        langToggle.addEventListener('click', () => {
+            currentLang = currentLang === 'sr' ? 'en' : 'sr';
+            langText.innerText = currentLang === 'sr' ? 'EN' : 'SRB';
+            updateLanguageUI();
+        });
+
+        function updateLanguageUI() {
+            const t = dictionary[currentLang];
+            if (complaintBox.classList.contains('hidden')) {
+                mainPrompt.innerText = t.mainPrompt;
+            } else {
+                mainPrompt.innerText = t.mainPromptComplaint;
+            }
+            document.getElementById('lbl-name').innerText = t.lblName;
+            document.getElementById('lbl-contact').innerText = t.lblContact;
+            document.getElementById('lbl-want-contact').innerText = t.lblWantContact;
+            document.getElementById('lbl-comment').innerText = t.lblComment;
+            document.getElementById('privacy-notice').innerText = t.privacyNotice;
+            btnText.innerText = t.btnSend;
+            document.getElementById('btn-back-text').innerText = t.btnBack;
+            document.getElementById('success-title').innerText = t.successTitle;
+            document.getElementById('success-desc').innerText = t.successDesc;
+            document.getElementById('already-title').innerText = t.alreadyTitle;
+            document.getElementById('already-desc').innerText = t.alreadyDesc;
+
+            if (selectedRating > 0) {
+                starLabel.innerText = t.starLabels[selectedRating];
+            }
+        }
+
+        const ratingColors = {
+            1: "#f87171",
+            2: "#fb923c",
+            3: "#facc15",
+            4: "#fbbf24",
+            5: "#f59e0b"
         };
 
         stars.forEach(star => {
@@ -125,46 +276,70 @@
                 stars.forEach(s => {
                     const val = parseInt(s.getAttribute('data-value'));
                     if (val <= selectedRating) {
-                        s.style.color = ratingConfig[selectedRating].color;
+                        s.style.color = ratingColors[selectedRating];
+                        s.classList.add('star-glow');
                     } else {
-                        s.style.color = '#e7e5e4'; // stone-200
+                        s.style.color = '#262626';
+                        s.classList.remove('star-glow');
                     }
                 });
 
-                starLabel.innerText = ratingConfig[selectedRating].label;
-                starLabel.style.color = ratingConfig[selectedRating].color;
+                const t = dictionary[currentLang];
+                starLabel.innerText = t.starLabels[selectedRating];
+                starLabel.style.color = ratingColors[selectedRating];
 
                 setTimeout(() => {
                     if (selectedRating >= 4) {
+                        if (ENABLE_LOCAL_STORAGE) {
+                            localStorage.setItem(`submitted_${CAFE_ID}`, 'true');
+                        }
                         window.location.href = GOOGLE_REVIEW_URL;
                     } else {
                         starsBox.classList.add('hidden');
                         starLabel.classList.add('hidden');
-                        mainPrompt.innerText = "Žao nam je što niste u potpunosti zadovoljni. Pomozite nam da budemo bolji:";
+                        mainPrompt.innerText = t.mainPromptComplaint;
                         complaintBox.classList.remove('hidden');
                     }
                 }, 350);
             });
         });
 
-        // Slanje forme ka Google Apps Script-u
+        backBtn.addEventListener('click', function() {
+            const t = dictionary[currentLang];
+            complaintBox.classList.add('hidden');
+            starsBox.classList.remove('hidden');
+            starLabel.classList.remove('hidden');
+            
+            mainPrompt.innerText = t.mainPrompt;
+            selectedRating = 0;
+            starLabel.innerText = '';
+            stars.forEach(s => {
+                s.style.color = '#262626';
+                s.classList.remove('star-glow');
+            });
+        });
+
         sendBtn.addEventListener('click', function() {
+            const t = dictionary[currentLang];
             const comment = document.getElementById('guest-comment').value.trim();
             const name = document.getElementById('guest-name').value.trim();
             const contact = document.getElementById('guest-contact').value.trim();
+            const wantContact = document.getElementById('guest-want-contact').checked;
 
             if (!comment) {
-                alert("Molimo vas da unesete komentar kako bismo znali šta treba da popravimo.");
+                alert(currentLang === 'sr' ? "Molimo vas da unesete komentar." : "Please enter your comment.");
                 return;
             }
 
             sendBtn.disabled = true;
-            sendBtn.innerText = "Slanje u toku...";
+            btnText.innerText = t.btnSending;
+            btnSpinner.classList.remove('hidden');
 
             const payload = {
                 rating: selectedRating,
-                name: name,
-                contact: contact,
+                name: name || "Anonimno",
+                contact: contact || "Nije navedeno",
+                wantContact: wantContact ? "DA" : "NE",
                 comment: comment
             };
 
@@ -175,35 +350,22 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
+                if (ENABLE_LOCAL_STORAGE) {
+                    localStorage.setItem(`submitted_${CAFE_ID}`, 'true');
+                }
+
                 complaintBox.classList.add('hidden');
                 mainPrompt.classList.add('hidden');
                 successBox.classList.remove('hidden');
             })
             .catch(error => {
                 console.error('Greška:', error);
-                alert("Došlo je do greške pri slanju.");
+                alert(currentLang === 'sr' ? "Došlo je do greške pri slanju." : "An error occurred while sending.");
                 sendBtn.disabled = false;
-                sendBtn.innerText = "Pošalji utisak";
+                btnText.innerText = t.btnSend;
+                btnSpinner.classList.add('hidden');
             });
         });
-        const backBtn = document.getElementById('back-btn');
-
-backBtn.addEventListener('click', function() {
-    // 1. Sakrij formu i prikaži zvezdice
-    complaintBox.classList.add('hidden');
-    starsBox.classList.remove('hidden');
-    starLabel.classList.remove('hidden');
-    
-    // 2. Vrati originalni naslov
-    mainPrompt.innerText = "Kako biste ocenili vaše današnje iskustvo sa nama?";
-    
-    // 3. Resetuj zvezdice i izabranu ocenu
-    selectedRating = 0;
-    starLabel.innerText = '';
-    stars.forEach(s => {
-        s.style.color = '#e7e5e4'; // Vraća na sivu boju
-    });
-});
     </script>
 </body>
 </html>
